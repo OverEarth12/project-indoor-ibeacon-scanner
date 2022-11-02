@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:backgroundTint="#FFFFFF"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/beaconCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 visible beacons:"
+        android:textAlignment="center" />
+
+    <ListView
+        android:id="@+id/beaconList"
+        android:layout_width="match_parent"
+        android:layout_height="466dp"
+        android:layout_weight="1">
+    </ListView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/rangingButton"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:onClick="rangingButtonTapped"
+            android:text="Disable Ranging" />
+
+        <Button
+            android:id="@+id/monitoringButton"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:onClick="monitoringButtonTapped"
+            android:text="Disable Monitoring" />
+    </LinearLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+
+        style="@style/color"
+        app:itemTextColor="#EDEDED">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="297dp"
+            android:layout_weight="0"
+            android:background="#FFFCFC"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="96dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0"
+                    android:autoSizeTextType="uniform"
+                    android:text="input_x"
+                    android:textAlignment="center" />
+
+                <EditText
+                    android:id="@+id/editTextNumberX"
+                    android:layout_width="312dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="0"
+                    android:ems="10"
+                    android:hint="pls type Number 0-9"
+                    android:inputType="number" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="96dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0"
+                    android:autoSizeTextType="uniform"
+                    android:text="input_y"
+                    android:textAlignment="center" />
+
+                <EditText
+                    android:id="@+id/editTextNumberY"
+                    android:layout_width="314dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="0"
+                    android:ems="10"
+                    android:hint="pls type Number 0-9"
+                    android:importantForAutofill="no"
+                    android:inputType="number" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch1"
+                    android:layout_width="133dp"
+                    android:layout_height="59dp"
+                    android:checked="false"
+                    android:enabled="true"
+                    android:gravity="center"
+                    android:text="SendData?"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/button1"
+                    android:layout_width="139dp"
+                    android:layout_height="60dp"
+                    android:layout_weight="0"
+                    android:text="Send Data"
+                    android:enabled="false"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
+
+</LinearLayout>
