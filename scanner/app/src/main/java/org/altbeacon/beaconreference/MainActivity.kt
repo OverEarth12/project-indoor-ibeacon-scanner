@@ -11,17 +11,22 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.MonitorNotifier
-import android.widget.Toast
 import com.google.gson.Gson
+import com.mongodb.MongoException
+import com.mongodb.client.MongoClients
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import okhttp3.*
+import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.MonitorNotifier
+import org.bson.BsonDocument
+import org.bson.BsonInt64
+import org.bson.Document
+import org.bson.conversions.Bson
 import java.io.IOException
 import java.net.URL
-import kotlin.math.log
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var beaconListView: ListView
@@ -69,15 +74,15 @@ class MainActivity : AppCompatActivity() {
         }
         button1.setOnClickListener {
             Toast.makeText(this@MainActivity, "You clicked me.", Toast.LENGTH_SHORT).show()
-            val json = Gson().toJson(Position(
+            val json = Gson().toJson(RadioMap(
                 roomId = "Test",
                 scannerId = "sc1",
-                rssi = -40,
+                rssi = -55,
                 pos = listOf(0,0)
             ))
             val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
             val request = Request.Builder()
-                .url(URL("http://192.168.31.66:8080/savepos"))
+                .url(URL("http://192.168.134.66:8080/savepos"))
                 .post(body)
                 .build()
             val okHttpClient = OkHttpClient()
