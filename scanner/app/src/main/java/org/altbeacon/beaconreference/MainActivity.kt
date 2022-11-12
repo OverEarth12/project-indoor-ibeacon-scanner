@@ -11,17 +11,14 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.MonitorNotifier
-import android.widget.Toast
+import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import okhttp3.*
+import org.altbeacon.beacon.*
 import java.io.IOException
 import java.net.URL
-import kotlin.math.log
 
 class MainActivity : AppCompatActivity() {
     lateinit var beaconListView: ListView
@@ -36,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var textInputX: EditText
     lateinit var textInputY: EditText
     lateinit var Button1: Button
+    lateinit var beaconNum: TextInputEditText
 
 
 
@@ -61,42 +59,83 @@ class MainActivity : AppCompatActivity() {
             ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
         textView2 = findViewById(R.id.textView2)
         textView3 = findViewById(R.id.textView3)
-        textInputX = findViewById(R.id.editTextNumberX);
+        textInputX = findViewById(R.id.editTextNumberX)
         textInputY = findViewById(R.id.editTextNumberY)
         Button1 = findViewById(R.id.button1)
+        beaconNum = findViewById(R.id.beaconNum)
         switch1.setOnCheckedChangeListener { _ , isChecked ->
             Button1.isEnabled = isChecked
         }
         button1.setOnClickListener {
-            Toast.makeText(this@MainActivity, "You clicked me.", Toast.LENGTH_SHORT).show()
-            val json = Gson().toJson(Position(
-                roomId = "Test",
-                scannerId = "sc1",
-                rssi = -40,
-                pos = listOf(0,0)
-            ))
+            val textX = editTextNumberX.text
+            val textY = editTextNumberY.text
+            val rssi =  Observer<Beacon> { beacons ->
+                for (beacon: Beacon in beacons) {
+                    getText(beacon.rssi)
+//                    Log.d(BeaconReferenceApplication.TAG, "this is rssi ${beacon.rssi} ")
+                }
+            }
+//            val rssi = BeaconReferenceApplication.Companion
+//                rssi.apply { it.g }
+//                Log.d(TAG,"Ranged ${beacons.count()}beacons")
+
+//                        .map { "rssi: ${it.rssi}"}
+
+//            val rssi = Observer<Collection<Beacon>> { beacons ->
+//                for (beacon: Beacon in beacons) {
+//                    Log.d(TAG, "$beacon about ${beacon.distance} meters away")
+//                }
+//            }
+
+            val json = Gson().toJson(
+                Position(
+                    roomId = "Test",
+                    scannerId = "sc2",
+                    rssi = rssi,
+                    pos = listOf(textX, textY)
+                )
+            )
             val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
             val request = Request.Builder()
-                .url(URL("http://192.168.31.66:8080/savepos"))
+                .url(URL("http://192.168.1.52:8080/savepos"))
                 .post(body)
                 .build()
             val okHttpClient = OkHttpClient()
             okHttpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     // Handle this
-                    println("Test "+e)
+                    println("Test " + e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
                     // Handle this
-                    println("Test "+response)
+                    println("Test " + response)
                 }
             })
+//            val rssi : Int = getRssi()
+//            Log.d(TAG, "RssiHelloWorld: ${rssi}")
+            Toast.makeText(this, textX.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this,textY.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this,rssi.toString(), Toast.LENGTH_SHORT).show()
+
+            println("hello world $rssi");
+
         }
 
-
     }
+
+
+
 // button to send data
+
+//    fun dosomeThingRssi(rssiFilter: RssiFilter) = Observer<Collection<Beacon>> { beacons ->
+//        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+//        for (beacon: Beacon in beacons) {
+//            Log.d(TAG, "$beacon about ${beacon.rssi} meters away")
+//            var rssiFilter = beacon.rssi
+//        }
+//
+//    }
 
 
     override fun onPause() {
@@ -133,9 +172,14 @@ class MainActivity : AppCompatActivity() {
         alertDialog = builder.create()
         alertDialog?.show()
     }
-
-    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
-        Log.d(TAG, "Ranged: ${beacons} beacons")
+//    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+//        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+//        for (beacon: Beacon in beacons) {
+//            Log.d(TAG, "$beacon about ${beacon.distance} meters away")
+//        }
+//    }
+     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
             beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
@@ -207,7 +251,7 @@ class MainActivity : AppCompatActivity() {
 
 
     fun checkPermissions() {
-        // basepermissions are for M and higher
+//         basepermissions are for M and higher
         var permissions = arrayOf( Manifest.permission.ACCESS_FINE_LOCATION)
         var permissionRationale ="This app needs fine location permission to detect beacons.  Please grant this now."
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -354,4 +398,16 @@ class MainActivity : AppCompatActivity() {
         val PERMISSION_REQUEST_FINE_LOCATION = 3
     }
 
+}
+
+private operator fun Int.next(): Beacon {
+    return this.next()
+}
+
+private operator fun Int.hasNext(): Boolean {
+    return true
+}
+
+private operator fun Beacon.iterator(): Int {
+    return rssi
 }

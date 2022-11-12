@@ -36,7 +36,6 @@ class BeaconReferenceApplication: Application() {
         //
         // If you don't care about AltBeacon, you can clear it from the defaults:
         beaconManager.getBeaconParsers().clear()
-
         // The example shows how to find iBeacon.
         beaconManager.getBeaconParsers().add(
             BeaconParser().
@@ -61,10 +60,10 @@ class BeaconReferenceApplication: Application() {
         // If you want to continuously range beacons in the background more often than every 15 mintues,
         // you can use the library's built-in foreground service to unlock this behavior on Android
         // 8+.   the method below shows how you set that up.
-        //setupForegroundService()
-        //beaconManager.setEnableScheduledScanJobs(false);
-        //beaconManager.setBackgroundBetweenScanPeriod(0);
-        //beaconManager.setBackgroundScanPeriod(1100);
+//        setupForegroundService()
+//        beaconManager.setEnableScheduledScanJobs(false);
+//        beaconManager.setBackgroundBetweenScanPeriod(0);
+//        beaconManager.setBackgroundScanPeriod(1100);
 
         // Ranging callbacks will drop out if no beacons are detected
         // Monitoring callbacks will be delayed by up to 25 minutes on region exit
@@ -91,14 +90,14 @@ class BeaconReferenceApplication: Application() {
         builder.setContentTitle("Scanning for Beacons")
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
-                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
+            this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
         )
         builder.setContentIntent(pendingIntent);
         val channel =  NotificationChannel("beacon-ref-notification-id",
             "My Notification Name", NotificationManager.IMPORTANCE_DEFAULT)
         channel.setDescription("My Notification Channel Description")
         val notificationManager =  getSystemService(
-                Context.NOTIFICATION_SERVICE) as NotificationManager
+            Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel);
         builder.setChannelId(channel.getId());
         BeaconManager.getInstanceForApplication(this).enableForegroundServiceScanning(builder.build(), 456);
@@ -118,8 +117,10 @@ class BeaconReferenceApplication: Application() {
         Log.d(MainActivity.TAG, "Ranged: ${beacons.count()} beacons")
         for (beacon: Beacon in beacons) {
             Log.d(TAG, "$beacon about ${beacon.distance} meters away")
+            Log.d(TAG, "this is rssi ${beacon.rssi} ")
         }
     }
+
 
     private fun sendNotification() {
         val builder = NotificationCompat.Builder(this, "beacon-ref-notification-id")
