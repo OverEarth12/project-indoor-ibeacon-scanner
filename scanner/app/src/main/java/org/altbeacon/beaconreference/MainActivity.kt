@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.widget.*
@@ -33,7 +34,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var textInputX: EditText
     lateinit var textInputY: EditText
     lateinit var Button1: Button
-    lateinit var beaconNum: TextInputEditText
+    lateinit var beaconNum: EditText
+    private var rssi: Int = 0
 
 
 
@@ -67,14 +69,19 @@ class MainActivity : AppCompatActivity() {
             Button1.isEnabled = isChecked
         }
         button1.setOnClickListener {
-            val textX = editTextNumberX.text
-            val textY = editTextNumberY.text
-            val rssi =  Observer<Beacon> { beacons ->
-                for (beacon: Beacon in beacons) {
-                    getText(beacon.rssi)
+            val textX = editTextNumberX.text.toString().toInt()
+//            textInputX.inputType = InputType.TYPE_CLASS_NUMBER
+//            textInputY.inputType = InputType.TYPE_CLASS_NUMBER
+            val textY = editTextNumberY.text.toString().toInt()
+//            val numXY = [textInputX,textInputY]
+            val beaconNum = beaconNum.text.toString()
+
+//            val rssi =  Observer<Beacon> { beacons ->
+//                for (beacon: Beacon in beacons) {
+//                    getText(beacon.rssi)
 //                    Log.d(BeaconReferenceApplication.TAG, "this is rssi ${beacon.rssi} ")
-                }
-            }
+//                }
+//            }
 //            val rssi = BeaconReferenceApplication.Companion
 //                rssi.apply { it.g }
 //                Log.d(TAG,"Ranged ${beacons.count()}beacons")
@@ -90,9 +97,9 @@ class MainActivity : AppCompatActivity() {
             val json = Gson().toJson(
                 Position(
                     roomId = "Test",
-                    scannerId = "sc2",
-                    rssi = rssi,
-                    pos = listOf(textX, textY)
+                    scannerId = beaconNum.toString(),
+                    rssi = this.rssi,
+                    pos = listOf(textX,textY)
                 )
             )
             val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
@@ -112,11 +119,10 @@ class MainActivity : AppCompatActivity() {
                     println("Test " + response)
                 }
             })
-//            val rssi : Int = getRssi()
-//            Log.d(TAG, "RssiHelloWorld: ${rssi}")
+
             Toast.makeText(this, textX.toString(), Toast.LENGTH_SHORT).show()
-//            Toast.makeText(this,textY.toString(), Toast.LENGTH_SHORT).show()
-//            Toast.makeText(this,rssi.toString(), Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, textY.toString(), Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, beaconNum.toString(), Toast.LENGTH_SHORT).show()
 
             println("hello world $rssi");
 
@@ -126,16 +132,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-// button to send data
-
-//    fun dosomeThingRssi(rssiFilter: RssiFilter) = Observer<Collection<Beacon>> { beacons ->
-//        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
-//        for (beacon: Beacon in beacons) {
-//            Log.d(TAG, "$beacon about ${beacon.rssi} meters away")
-//            var rssiFilter = beacon.rssi
-//        }
-//
-//    }
 
 
     override fun onPause() {
@@ -180,6 +176,11 @@ class MainActivity : AppCompatActivity() {
 //    }
      val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+        for (beacon: Beacon in beacons) {
+            Log.d(TAG, "$beacon about ${beacon.rssi} meters away")
+            this.rssi = "${beacon.rssi}".toInt()
+        }
+
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
             beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
