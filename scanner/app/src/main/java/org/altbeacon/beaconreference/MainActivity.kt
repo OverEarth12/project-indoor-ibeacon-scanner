@@ -5,14 +5,12 @@ import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
@@ -36,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var Button1: Button
     lateinit var beaconNum: EditText
     private var rssi: Int = 0
-
+    var beaconGot = ArrayList<String>()
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -73,9 +71,12 @@ class MainActivity : AppCompatActivity() {
 //            textInputX.inputType = InputType.TYPE_CLASS_NUMBER
 //            textInputY.inputType = InputType.TYPE_CLASS_NUMBER
             val textY = editTextNumberY.text.toString().toInt()
-//            val numXY = [textInputX,textInputY]
             val beaconNum = beaconNum.text.toString()
-
+//            println("Greeting my friend" + this.beaconGot.count())
+            println("this is in Array" + this.beaconGot)
+            println("This is your phone ${Build.BRAND}${Build.MODEL}")
+//            if (beaconGot.toString() in "00000000-0000-0000-0000-000000000011")
+//            println("this is  in Array" + this.beaconGot[0])
 //            val rssi =  Observer<Beacon> { beacons ->
 //                for (beacon: Beacon in beacons) {
 //                    getText(beacon.rssi)
@@ -97,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             val json = Gson().toJson(
                 Position(
                     roomId = "Test",
-                    scannerId = beaconNum.toString(),
+                    scannerId = "${Build.BRAND}${Build.MODEL}",
                     rssi = this.rssi,
                     pos = listOf(textX,textY)
                 )
@@ -168,19 +169,23 @@ class MainActivity : AppCompatActivity() {
         alertDialog = builder.create()
         alertDialog?.show()
     }
-//    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
-//        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
-//        for (beacon: Beacon in beacons) {
-//            Log.d(TAG, "$beacon about ${beacon.distance} meters away")
-//        }
-//    }
+
      val rangingObserver = Observer<Collection<Beacon>> { beacons ->
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
-        for (beacon: Beacon in beacons) {
-            Log.d(TAG, "$beacon about ${beacon.rssi} meters away")
+//         var testSub = "$beacons"
+//         testSub = testSub.split(',')
+         Log.d(TAG, "this is wat we got $beacons")
+//         this.beaconGot.add("$beacons")
+         Log.d(TAG, "This is what we got from this ${beacons::class.simpleName} ")
+         beacons.forEach {
+             println("The fuk is this $it" +"Rssi : ${it.rssi}")
+             beaconGot.addAll(listOf("$it" + " rssi : ${it.rssi}"))
+         }
+
+         for (beacon: Beacon in beacons) {
+            Log.d(TAG, "$beacon about ${beacon.rssi} dB")
             this.rssi = "${beacon.rssi}".toInt()
         }
-
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
             beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
