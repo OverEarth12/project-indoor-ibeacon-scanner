@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var Button1: Button
     lateinit var beaconNum: EditText
     private var rssi: Int = 0
-    var beaconGot = ArrayList<String>()
+    var idBeacon = ArrayList<String>()
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -71,29 +71,12 @@ class MainActivity : AppCompatActivity() {
 //            textInputX.inputType = InputType.TYPE_CLASS_NUMBER
 //            textInputY.inputType = InputType.TYPE_CLASS_NUMBER
             val textY = editTextNumberY.text.toString().toInt()
+//            val beaconHave = arrayListOf("00000000-0000-0000-0000-000000000011","00000000-0000-0000-0000-000000000100","00000000-0000-0000-0000-000000000001")
             val beaconNum = beaconNum.text.toString()
-//            println("Greeting my friend" + this.beaconGot.count())
-            println("this is in Array" + this.beaconGot)
+
+//            idBeacon.add(this.rssi.toString())
+            println("this is in String we got $idBeacon")
             println("This is your phone ${Build.BRAND}${Build.MODEL}")
-//            if (beaconGot.toString() in "00000000-0000-0000-0000-000000000011")
-//            println("this is  in Array" + this.beaconGot[0])
-//            val rssi =  Observer<Beacon> { beacons ->
-//                for (beacon: Beacon in beacons) {
-//                    getText(beacon.rssi)
-//                    Log.d(BeaconReferenceApplication.TAG, "this is rssi ${beacon.rssi} ")
-//                }
-//            }
-//            val rssi = BeaconReferenceApplication.Companion
-//                rssi.apply { it.g }
-//                Log.d(TAG,"Ranged ${beacons.count()}beacons")
-
-//                        .map { "rssi: ${it.rssi}"}
-
-//            val rssi = Observer<Collection<Beacon>> { beacons ->
-//                for (beacon: Beacon in beacons) {
-//                    Log.d(TAG, "$beacon about ${beacon.distance} meters away")
-//                }
-//            }
 
             val json = Gson().toJson(
                 Position(
@@ -121,19 +104,15 @@ class MainActivity : AppCompatActivity() {
                 }
             })
 
-            Toast.makeText(this, textX.toString(), Toast.LENGTH_SHORT).show()
-            Toast.makeText(this, textY.toString(), Toast.LENGTH_SHORT).show()
-            Toast.makeText(this, beaconNum.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, textX.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, textY.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, beaconNum, Toast.LENGTH_SHORT).show()
 
             println("hello world $rssi");
 
         }
 
     }
-
-
-
-
 
     override fun onPause() {
         Log.d(TAG, "onPause")
@@ -177,15 +156,18 @@ class MainActivity : AppCompatActivity() {
          Log.d(TAG, "this is wat we got $beacons")
 //         this.beaconGot.add("$beacons")
          Log.d(TAG, "This is what we got from this ${beacons::class.simpleName} ")
-         beacons.forEach {
-             println("The fuk is this $it" +"Rssi : ${it.rssi}")
-             beaconGot.addAll(listOf("$it" + " rssi : ${it.rssi}"))
-         }
+//         beacons.forEach {
+//             println("The fuk is this ${it.id1}" +" Rssi : ${it.rssi}")
+//             beaconGot.addAll(listOf("id1: ${it.id1}" + " rssi: ${it.rssi}"))
+//             beaconGot = beacons.map {key=it.id1"${it.id1}${it.rssi}" }
+//         }
 
          for (beacon: Beacon in beacons) {
             Log.d(TAG, "$beacon about ${beacon.rssi} dB")
             this.rssi = "${beacon.rssi}".toInt()
-        }
+             idBeacon.add(beacon.id1.toString())
+         }
+
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
             beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
@@ -405,15 +387,15 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
-
-private operator fun Int.next(): Beacon {
-    return this.next()
-}
-
-private operator fun Int.hasNext(): Boolean {
-    return true
-}
-
-private operator fun Beacon.iterator(): Int {
-    return rssi
-}
+//
+//private operator fun Int.next(): Beacon {
+//    return this.next()
+//}
+//
+//private operator fun Int.hasNext(): Boolean {
+//    return true
+//}
+//
+//private operator fun Beacon.iterator(): Int {
+//    return rssi
+//}
