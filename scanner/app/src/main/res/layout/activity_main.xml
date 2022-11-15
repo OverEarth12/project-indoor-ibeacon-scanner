@@ -109,6 +109,11 @@
 
             </LinearLayout>
 
+            <Spinner
+                android:id="@+id/toSentBeacon"
+                android:layout_width="match_parent"
+                android:layout_height="38dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="78dp">
@@ -123,12 +128,12 @@
                     android:text="SendData?"
                     android:textSize="16sp" />
 
-                    <EditText
-                        android:id="@+id/beaconNum"
-                        android:layout_width="113dp"
-                        android:layout_height="match_parent"
-                        android:hint="Numbeacon"
-                        android:inputType="number" />
+                <EditText
+                    android:id="@+id/roomId"
+                    android:layout_width="113dp"
+                    android:layout_height="match_parent"
+                    android:hint="Room"
+                    android:inputType="number" />
 
                 <Button
                     android:id="@+id/button1"
@@ -139,6 +144,7 @@
                     android:text="Send Data" />
 
             </LinearLayout>
+
         </LinearLayout>
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>

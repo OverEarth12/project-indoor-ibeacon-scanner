@@ -13,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
 import okhttp3.*
 import org.altbeacon.beacon.*
 import java.io.IOException
@@ -32,9 +31,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var textInputX: EditText
     lateinit var textInputY: EditText
     lateinit var Button1: Button
-    lateinit var beaconNum: EditText
+    lateinit var roomId: EditText
+    lateinit var toSentBeacon: Spinner
     private var rssi: Int = 0
-    var idBeacon = ArrayList<String>()
+//    var idBeacon = ArrayList<String>()
+    val beaconsLists = mutableMapOf<String, Int>()
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -62,7 +63,10 @@ class MainActivity : AppCompatActivity() {
         textInputX = findViewById(R.id.editTextNumberX)
         textInputY = findViewById(R.id.editTextNumberY)
         Button1 = findViewById(R.id.button1)
-        beaconNum = findViewById(R.id.beaconNum)
+        roomId = findViewById(R.id.roomId)
+        toSentBeacon = findViewById(R.id.toSentBeacon)
+        toSentBeacon.adapter =
+            ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("--Select Beacon--"))
         switch1.setOnCheckedChangeListener { _ , isChecked ->
             Button1.isEnabled = isChecked
         }
@@ -72,23 +76,24 @@ class MainActivity : AppCompatActivity() {
 //            textInputY.inputType = InputType.TYPE_CLASS_NUMBER
             val textY = editTextNumberY.text.toString().toInt()
 //            val beaconHave = arrayListOf("00000000-0000-0000-0000-000000000011","00000000-0000-0000-0000-000000000100","00000000-0000-0000-0000-000000000001")
-            val beaconNum = beaconNum.text.toString()
+            val room = roomId.text.toString()
 
 //            idBeacon.add(this.rssi.toString())
-            println("this is in String we got $idBeacon")
+//            println("this is in String we got $idBeacon")
             println("This is your phone ${Build.BRAND}${Build.MODEL}")
 
             val json = Gson().toJson(
                 Position(
-                    roomId = "Test",
+                    roomId = room,
                     scannerId = "${Build.BRAND}${Build.MODEL}",
-                    rssi = this.rssi,
+                    rssi = beaconsLists.getValue(toSentBeacon.selectedItem.toString()),
                     pos = listOf(textX,textY)
                 )
             )
+            println("rssi sent:"+beaconsLists.getValue(toSentBeacon.selectedItem.toString()))
             val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
             val request = Request.Builder()
-                .url(URL("http://192.168.1.52:8080/savepos"))
+                .url(URL("https://calm-reaches-73981.herokuapp.com/savepos"))
                 .post(body)
                 .build()
             val okHttpClient = OkHttpClient()
@@ -165,15 +170,19 @@ class MainActivity : AppCompatActivity() {
          for (beacon: Beacon in beacons) {
             Log.d(TAG, "$beacon about ${beacon.rssi} dB")
             this.rssi = "${beacon.rssi}".toInt()
-             idBeacon.add(beacon.id1.toString())
+             beaconsLists[beacon.id1.toString()] = beacon.rssi
          }
+         Log.d(TAG, "TestResult: "+beaconsLists)
 
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
             beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
                 beacons
-                    .sortedBy { it.distance }
+                    .sortedBy { it.id1 }
                     .map { "${it.id1}\nid2: ${it.id2} id3:  rssi: ${it.rssi}\nest. distance: ${it.distance} m" }.toTypedArray())
+            toSentBeacon.adapter =
+                ArrayAdapter(this, android.R.layout.simple_spinner_item,
+                    beacons.map{it.id1})
         }
     }
 
