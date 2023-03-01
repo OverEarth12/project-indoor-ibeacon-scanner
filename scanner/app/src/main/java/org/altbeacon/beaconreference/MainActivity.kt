@@ -12,11 +12,20 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
+import com.mongodb.MongoException
+import com.mongodb.client.MongoClients
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
-import org.altbeacon.beacon.*
+import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.MonitorNotifier
+import org.bson.BsonDocument
+import org.bson.BsonInt64
+import org.bson.Document
+import org.bson.conversions.Bson
 import java.io.IOException
 import java.net.URL
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var beaconListView: ListView
