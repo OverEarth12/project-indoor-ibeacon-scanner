@@ -1,0 +1,13 @@
+
+backend/AxonServer-4.6.5/AxonIQ.pid
+backend/AxonServer-4.6.5/axonserver-cli.jar
+backend/AxonServer-4.6.5/axonserver.jar
+backend/AxonServer-4.6.5/data/default/00000000000000000000.events
+backend/AxonServer-4.6.5/data/default/00000000000000000000.snapshots
+backend/AxonServer-4.6.5/data/axonserver-controldb.mv.db
+backend/AxonServer-4.6.5/kubernetes/axonserver.yaml
+backend/AxonServer-4.6.5/LICENSE.txt
+backend/AxonServer-4.6.5/README.txt
+backend/AxonServer-4.6.5/plugins/cache/bundle0/last.java.version
+backend/AxonServer.zip
+backend/fingerprintManager/pom.xml

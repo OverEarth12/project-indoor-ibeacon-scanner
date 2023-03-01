@@ -78,6 +78,7 @@
                     android:layout_weight="0"
                     android:ems="10"
                     android:hint="pls type Number 0-9"
+                    android:importantForAutofill="no"
                     android:inputType="number" />
 
             </LinearLayout>
@@ -108,30 +109,42 @@
 
             </LinearLayout>
 
+            <Spinner
+                android:id="@+id/toSentBeacon"
+                android:layout_width="match_parent"
+                android:layout_height="38dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:layout_height="78dp">
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switch1"
                     android:layout_width="133dp"
-                    android:layout_height="59dp"
+                    android:layout_height="match_parent"
                     android:checked="false"
                     android:enabled="true"
                     android:gravity="center"
                     android:text="SendData?"
                     android:textSize="16sp" />
 
+                <EditText
+                    android:id="@+id/roomId"
+                    android:layout_width="113dp"
+                    android:layout_height="match_parent"
+                    android:hint="Room"
+                    android:inputType="textShortMessage" />
+
                 <Button
                     android:id="@+id/button1"
                     android:layout_width="139dp"
-                    android:layout_height="60dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="0"
-                    android:text="Send Data"
-                    android:enabled="false"/>
+                    android:enabled="false"
+                    android:text="Send Data" />
 
             </LinearLayout>
+
         </LinearLayout>
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>

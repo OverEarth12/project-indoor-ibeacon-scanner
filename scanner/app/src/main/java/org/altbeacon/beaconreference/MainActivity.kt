@@ -12,21 +12,11 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
-import com.mongodb.MongoException
-import com.mongodb.client.MongoClients
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
 import okhttp3.*
-import org.altbeacon.beacon.Beacon
-import org.altbeacon.beacon.BeaconManager
-import org.altbeacon.beacon.MonitorNotifier
-import org.bson.BsonDocument
-import org.bson.BsonInt64
-import org.bson.Document
-import org.bson.conversions.Bson
+import org.altbeacon.beacon.*
 import java.io.IOException
 import java.net.URL
-
 
 class MainActivity : AppCompatActivity() {
     lateinit var beaconListView: ListView
@@ -41,7 +31,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var textInputX: EditText
     lateinit var textInputY: EditText
     lateinit var Button1: Button
-
+    lateinit var roomId: EditText
+    lateinit var toSentBeacon: Spinner
+    private var rssi: Int = 0
+//    var idBeacon = ArrayList<String>()
+    val beaconsLists = mutableMapOf<String, Int>()
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -66,43 +60,64 @@ class MainActivity : AppCompatActivity() {
             ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
         textView2 = findViewById(R.id.textView2)
         textView3 = findViewById(R.id.textView3)
-        textInputX = findViewById(R.id.editTextNumberX);
+        textInputX = findViewById(R.id.editTextNumberX)
         textInputY = findViewById(R.id.editTextNumberY)
         Button1 = findViewById(R.id.button1)
+        roomId = findViewById(R.id.roomId)
+        toSentBeacon = findViewById(R.id.toSentBeacon)
+        toSentBeacon.adapter =
+            ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("--Select Beacon--"))
         switch1.setOnCheckedChangeListener { _ , isChecked ->
             Button1.isEnabled = isChecked
         }
         button1.setOnClickListener {
-            Toast.makeText(this@MainActivity, "You clicked me.", Toast.LENGTH_SHORT).show()
-            val json = Gson().toJson(RadioMap(
-                roomId = "Test",
-                scannerId = "sc1",
-                rssi = -55,
-                pos = listOf(0,0)
-            ))
+            val textX = editTextNumberX.text.toString().toInt()
+//            textInputX.inputType = InputType.TYPE_CLASS_NUMBER
+//            textInputY.inputType = InputType.TYPE_CLASS_NUMBER
+            val textY = editTextNumberY.text.toString().toInt()
+//            val beaconHave = arrayListOf("00000000-0000-0000-0000-000000000011","00000000-0000-0000-0000-000000000100","00000000-0000-0000-0000-000000000001")
+            val room = roomId.text.toString()
+
+//            idBeacon.add(this.rssi.toString())
+//            println("this is in String we got $idBeacon")
+            println("This is your phone ${Build.BRAND}${Build.MODEL}")
+
+            val json = Gson().toJson(
+                RadioMap(
+                    roomId = room,
+                    scannerId = "${Build.BRAND}${Build.MODEL}",
+                    rssi = beaconsLists.getValue(toSentBeacon.selectedItem.toString()),
+                    pos = listOf(textX,textY)
+                )
+            )
+            println("rssi sent:"+beaconsLists.getValue(toSentBeacon.selectedItem.toString()))
             val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
             val request = Request.Builder()
-                .url(URL("http://192.168.134.66:8080/savepos"))
+                .url(URL("http://beaconposelastic-env.eba-qjdvmh5p.ap-southeast-1.elasticbeanstalk.com/savepos"))
                 .post(body)
                 .build()
             val okHttpClient = OkHttpClient()
             okHttpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     // Handle this
-                    println("Test "+e)
+                    println("Test " + e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
                     // Handle this
-                    println("Test "+response)
+                    println("Test " + response)
                 }
             })
+
+//            Toast.makeText(this, textX.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, textY.toString(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, beaconNum, Toast.LENGTH_SHORT).show()
+
+            println("hello world $rssi");
+
         }
 
-
     }
-// button to send data
-
 
     override fun onPause() {
         Log.d(TAG, "onPause")
@@ -139,14 +154,35 @@ class MainActivity : AppCompatActivity() {
         alertDialog?.show()
     }
 
-    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
-        Log.d(TAG, "Ranged: ${beacons} beacons")
+     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+//         var testSub = "$beacons"
+//         testSub = testSub.split(',')
+         Log.d(TAG, "this is wat we got $beacons")
+//         this.beaconGot.add("$beacons")
+         Log.d(TAG, "This is what we got from this ${beacons::class.simpleName} ")
+//         beacons.forEach {
+//             println("The fuk is this ${it.id1}" +" Rssi : ${it.rssi}")
+//             beaconGot.addAll(listOf("id1: ${it.id1}" + " rssi: ${it.rssi}"))
+//             beaconGot = beacons.map {key=it.id1"${it.id1}${it.rssi}" }
+//         }
+
+         for (beacon: Beacon in beacons) {
+            Log.d(TAG, "$beacon about ${beacon.rssi} dB")
+            this.rssi = "${beacon.rssi}".toInt()
+             beaconsLists[beacon.id1.toString()] = beacon.rssi
+         }
+         Log.d(TAG, "TestResult: "+beaconsLists)
+
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
             beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
                 beacons
-                    .sortedBy { it.distance }
+                    .sortedBy { it.id1 }
                     .map { "${it.id1}\nid2: ${it.id2} id3:  rssi: ${it.rssi}\nest. distance: ${it.distance} m" }.toTypedArray())
+            toSentBeacon.adapter =
+                ArrayAdapter(this, android.R.layout.simple_spinner_item,
+                    beacons.map{it.id1})
         }
     }
 
@@ -212,7 +248,7 @@ class MainActivity : AppCompatActivity() {
 
 
     fun checkPermissions() {
-        // basepermissions are for M and higher
+//         basepermissions are for M and higher
         var permissions = arrayOf( Manifest.permission.ACCESS_FINE_LOCATION)
         var permissionRationale ="This app needs fine location permission to detect beacons.  Please grant this now."
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -360,3 +396,15 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+//
+//private operator fun Int.next(): Beacon {
+//    return this.next()
+//}
+//
+//private operator fun Int.hasNext(): Boolean {
+//    return true
+//}
+//
+//private operator fun Beacon.iterator(): Int {
+//    return rssi
+//}
