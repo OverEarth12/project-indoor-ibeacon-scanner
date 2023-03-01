@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             println("rssi sent:"+beaconsLists.getValue(toSentBeacon.selectedItem.toString()))
             val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
             val request = Request.Builder()
-                .url(URL("https://calm-reaches-73981.herokuapp.com/savepos"))
+                .url(URL("http://beaconposelastic-env.eba-qjdvmh5p.ap-southeast-1.elasticbeanstalk.com/savepos"))
                 .post(body)
                 .build()
             val okHttpClient = OkHttpClient()
