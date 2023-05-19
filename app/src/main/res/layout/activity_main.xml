@@ -59,7 +59,7 @@
             <EditText
                 android:id="@+id/scannerId"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="56dp"
                 android:layout_weight="1"
                 android:hint="Scanner ID"
                 android:inputType="textShortMessage" />
@@ -86,7 +86,8 @@
                     android:ems="10"
                     android:hint="pls type Number 0-9"
                     android:importantForAutofill="no"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:textColorHint="#757575" />
 
             </LinearLayout>
 
