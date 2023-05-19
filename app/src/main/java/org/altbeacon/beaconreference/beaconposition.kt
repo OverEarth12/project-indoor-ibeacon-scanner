@@ -1,10 +1,11 @@
 package org.altbeacon.beaconreference
 
+import com.google.gson.annotations.SerializedName
 
-class RadioMap(
+class beaconposition (
     val roomid: String,
     val scannerid: String,
     val rssi: Int,
-    val uuid: String ){
+    val uuid: String){
 
 }

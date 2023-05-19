@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.*
@@ -31,12 +33,18 @@ class MainActivity : AppCompatActivity() {
     lateinit var textInputX: EditText
     lateinit var textInputY: EditText
     lateinit var Button1: Button
+    lateinit var Button2: Button
+    lateinit var RegButton: Button
     lateinit var roomId: EditText
+    lateinit var scannerId: EditText
     lateinit var toSentBeacon: Spinner
     private var rssi: Int = 0
 //    var idBeacon = ArrayList<String>()
     val beaconsLists = mutableMapOf<String, Int>()
-
+    val averageBeacon = mutableMapOf<String, ArrayList<Int>>()
+    private var updatetimes: Int = 0
+    private var sentData: Boolean = false;
+    private var scanner = "";
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,13 +71,34 @@ class MainActivity : AppCompatActivity() {
         textInputX = findViewById(R.id.editTextNumberX)
         textInputY = findViewById(R.id.editTextNumberY)
         Button1 = findViewById(R.id.button1)
+        Button2 = findViewById(R.id.button2)
+        RegButton = findViewById(R.id.regButton)
         roomId = findViewById(R.id.roomId)
+        scannerId = findViewById(R.id.scannerId)
         toSentBeacon = findViewById(R.id.toSentBeacon)
         toSentBeacon.adapter =
             ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("--Select Beacon--"))
         switch1.setOnCheckedChangeListener { _ , isChecked ->
-            Button1.isEnabled = isChecked
+            Button1.isEnabled = !isChecked
+            sentData = isChecked
         }
+        switch1.isEnabled = false
+        Button1.isEnabled = true
+        scannerId.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                // This method is called after the text is changed.
+                scanner = s.toString()
+                switch1.isEnabled = scanner.length > 0
+            }
+        })
         button1.setOnClickListener {
             val textX = editTextNumberX.text.toString().toInt()
 //            textInputX.inputType = InputType.TYPE_CLASS_NUMBER
@@ -84,16 +113,17 @@ class MainActivity : AppCompatActivity() {
 
             val json = Gson().toJson(
                 RadioMap(
-                    roomId = room,
-                    scannerId = "${Build.BRAND}${Build.MODEL}",
+                    roomid = room,
+                    scannerid = scanner,
                     rssi = beaconsLists.getValue(toSentBeacon.selectedItem.toString()),
-                    pos = listOf(textX,textY)
+                    uuid = toSentBeacon.selectedItem.toString()
                 )
             )
+            println(json+"");
             println("rssi sent:"+beaconsLists.getValue(toSentBeacon.selectedItem.toString()))
             val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
             val request = Request.Builder()
-                .url(URL("http://beaconposelastic-env.eba-qjdvmh5p.ap-southeast-1.elasticbeanstalk.com/savepos"))
+                .url(URL("http://trackingposition.us-east-1.elasticbeanstalk.com:8080/savepos/$textX/$textY"))
                 .post(body)
                 .build()
             val okHttpClient = OkHttpClient()
@@ -105,7 +135,8 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onResponse(call: Call, response: Response) {
                     // Handle this
-                    println("Test " + response)
+
+                    println("Test " + response.body()?.string())
                 }
             })
 
@@ -115,6 +146,14 @@ class MainActivity : AppCompatActivity() {
 
             println("hello world $rssi");
 
+        }
+
+        button2.setOnClickListener {
+            sentBeacons();
+        }
+
+        RegButton.setOnClickListener{
+            registerBeacon()
         }
 
     }
@@ -127,6 +166,96 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "onResume")
         super.onResume()
         checkPermissions()
+    }
+
+    fun sentBeacons(){
+//        val foundBeacons = mutableListOf<beaconposition>()
+        val result = scannerResult(scanner, roomId.text.toString())
+//        val room = roomId.text.toString()
+
+        if(result.roomid == ""){
+            println("Roomid is empty")
+        }else{
+            for (element in beaconsLists){
+//                val foundbeacon = beaconposition(
+//                    roomid = room,
+//                    scannerid = this.scanner,
+//                    rssi = averageBeacon.getValue(element.key).sum()/averageBeacon.getValue(element.key).size,
+//                    uuid = element.key
+//                )
+//                foundBeacons.add(foundbeacon)
+                result.addBeacon(element.key, averageBeacon.getValue(element.key).sum()/averageBeacon.getValue(element.key).size)
+            }
+            val json = Gson().toJson(result)
+            println("Test1 "+json)
+            val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
+            val request = Request.Builder()
+                .url(URL("http://trackingposition.us-east-1.elasticbeanstalk.com:8080/saveBeacons"))
+                .post(body)
+                .build()
+            val okHttpClient = OkHttpClient()
+            okHttpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    // Handle this
+                    println("SentTEST " + e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    // Handle this
+                    println("SentTEST " + response)
+                }
+            })
+        }
+
+    }
+
+    fun updateAverage(){
+        for ((key,item) in beaconsLists){
+            if(key in averageBeacon.keys){
+                var arrayinmap = averageBeacon.getValue(key)
+                if(averageBeacon.getValue(key).size >= 10){
+                    arrayinmap.removeAt(0)
+                }
+                arrayinmap.add(item)
+                averageBeacon.set(key, arrayinmap)
+            }else{
+                averageBeacon.set(key, arrayListOf(item))
+            }
+            println(averageBeacon.getValue(key).toString())
+            var size1 = averageBeacon.getValue(key).size
+            var toprint = averageBeacon.getValue(key).sum()/size1
+            println("$toprint and $size1")
+        }
+        updatetimes++;
+        if(updatetimes >= 10 && sentData){
+            sentBeacons()
+            updatetimes = 0;
+        }
+    }
+
+    fun registerBeacon(){
+        var toregbeacon = toSentBeacon.selectedItem.toString()
+        val json = Gson().toJson(regBeacon(
+            uuid = toregbeacon,
+            isactive = true
+        ))
+        val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
+        val request = Request.Builder()
+            .url(URL("http://trackingposition.us-east-1.elasticbeanstalk.com:8080/regbeacon"))
+            .post(body)
+            .build()
+        val okHttpClient = OkHttpClient()
+        okHttpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                // Handle this
+                println("reged " + e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                // Handle this
+                println("reged " + response.body()?.string())
+            }
+        })
     }
 
     val monitoringObserver = Observer<Int> { state ->
@@ -158,9 +287,9 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Ranged: ${beacons.count()} beacons")
 //         var testSub = "$beacons"
 //         testSub = testSub.split(',')
-         Log.d(TAG, "this is wat we got $beacons")
+//         Log.d(TAG, "this is wat we got $beacons")
 //         this.beaconGot.add("$beacons")
-         Log.d(TAG, "This is what we got from this ${beacons::class.simpleName} ")
+//         Log.d(TAG, "This is what we got from this ${beacons::class.simpleName} ")
 //         beacons.forEach {
 //             println("The fuk is this ${it.id1}" +" Rssi : ${it.rssi}")
 //             beaconGot.addAll(listOf("id1: ${it.id1}" + " rssi: ${it.rssi}"))
@@ -168,11 +297,12 @@ class MainActivity : AppCompatActivity() {
 //         }
 
          for (beacon: Beacon in beacons) {
-            Log.d(TAG, "$beacon about ${beacon.rssi} dB")
+//            Log.d(TAG, "$beacon about ${beacon.rssi} dB")
             this.rssi = "${beacon.rssi}".toInt()
              beaconsLists[beacon.id1.toString()] = beacon.rssi
          }
-         Log.d(TAG, "TestResult: "+beaconsLists)
+//         Log.d(TAG, "TestResult: "+beaconsLists)
+         updateAverage()
 
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
             beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
@@ -180,6 +310,14 @@ class MainActivity : AppCompatActivity() {
                 beacons
                     .sortedBy { it.id1 }
                     .map { "${it.id1}\nid2: ${it.id2} id3:  rssi: ${it.rssi}\nest. distance: ${it.distance} m" }.toTypedArray())
+//            val toSentBeacon = findViewById<Spinner>(R.id.toSentBeacon)
+//            val toSentBeaconAdapter = toSentBeacon.adapter as ArrayAdapter<String>
+//            toSentBeaconAdapter.clear()
+//            toSentBeaconAdapter.addAll(beacons.map{it.id1.toString()})
+//            toSentBeaconAdapter.notifyDataSetChanged()
+
+
+
             toSentBeacon.adapter =
                 ArrayAdapter(this, android.R.layout.simple_spinner_item,
                     beacons.map{it.id1})

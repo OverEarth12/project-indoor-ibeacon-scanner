@@ -18,9 +18,8 @@
     <ListView
         android:id="@+id/beaconList"
         android:layout_width="match_parent"
-        android:layout_height="466dp"
-        android:layout_weight="1">
-    </ListView>
+        android:layout_height="302dp"
+        android:layout_weight="1"></ListView>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -52,10 +51,18 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="297dp"
+            android:layout_height="match_parent"
             android:layout_weight="0"
             android:background="#FFFCFC"
             android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/scannerId"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:hint="Scanner ID"
+                android:inputType="textShortMessage" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -144,6 +151,18 @@
                     android:text="Send Data" />
 
             </LinearLayout>
+
+            <Button
+                android:id="@+id/regButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Register this Beacon" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Test" />
 
         </LinearLayout>
 
