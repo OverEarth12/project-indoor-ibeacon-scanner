@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">BeaconReference</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home_page">Home page</string>
+    <string name="offline_page">Offline page</string>
+    <string name="online_page">Online page</string>
+    <string name="AddPersons_page">Add persons page</string>
+    <string name="online">Online</string>
+    <string name="offline">offline</string>
+    <string name="add_persons">Add persons</string>
+    <string name="home">Home</string>
 </resources>

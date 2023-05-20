@@ -8,62 +8,68 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/beaconCount"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="0 visible beacons:"
-        android:textAlignment="center" />
+        android:layout_height="707dp"
+        android:id="@+id/frame_layout"
 
-    <ListView
-        android:id="@+id/beaconList"
-        android:layout_width="match_parent"
-        android:layout_height="302dp"
-        android:layout_weight="1"></ListView>
+        >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/rangingButton"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:onClick="rangingButtonTapped"
-            android:text="Disable Ranging" />
-
-        <Button
-            android:id="@+id/monitoringButton"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:onClick="monitoringButtonTapped"
-            android:text="Disable Monitoring" />
-    </LinearLayout>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-
-        style="@style/color"
-        app:itemTextColor="#EDEDED">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0"
-            android:background="#FFFCFC"
             android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/scannerId"
+            <TextView
+                android:id="@+id/beaconCount"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:hint="Scanner ID"
-                android:inputType="textShortMessage" />
+                android:layout_height="wrap_content"
+                android:text="0 visible beacons:"
+                android:textAlignment="center" />
 
+            <ListView
+                android:id="@+id/beaconList"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_weight="1"></ListView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/rangingButton"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:onClick="rangingButtonTapped"
+                    android:text="Disable Ranging" />
+
+                <Button
+                    android:id="@+id/monitoringButton"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:onClick="monitoringButtonTapped"
+                    android:text="Disable Monitoring" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_weight="0"
+                android:background="#FFFCFC"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/scannerId"
+                    android:layout_width="match_parent"
+                    android:layout_height="22pt"
+                    android:hint="Scanner ID"
+                    android:inputType="textShortMessage" />
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -80,14 +86,13 @@
 
                 <EditText
                     android:id="@+id/editTextNumberX"
-                    android:layout_width="312dp"
+                    android:layout_width="329dp"
                     android:layout_height="48dp"
                     android:layout_weight="0"
                     android:ems="10"
                     android:hint="pls type Number 0-9"
                     android:importantForAutofill="no"
-                    android:inputType="number"
-                    android:textColorHint="#757575" />
+                    android:inputType="number" />
 
             </LinearLayout>
 
@@ -107,7 +112,7 @@
 
                 <EditText
                     android:id="@+id/editTextNumberY"
-                    android:layout_width="314dp"
+                    android:layout_width="329dp"
                     android:layout_height="48dp"
                     android:layout_weight="0"
                     android:ems="10"
@@ -116,11 +121,11 @@
                     android:inputType="number" />
 
             </LinearLayout>
-
             <Spinner
                 android:id="@+id/toSentBeacon"
                 android:layout_width="match_parent"
-                android:layout_height="38dp" />
+                android:layout_height="48dp"
+                tools:ignore="SpeakableTextPresentCheck" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -138,14 +143,14 @@
 
                 <EditText
                     android:id="@+id/roomId"
-                    android:layout_width="113dp"
+                    android:layout_width="136dp"
                     android:layout_height="match_parent"
                     android:hint="Room"
                     android:inputType="textShortMessage" />
 
                 <Button
                     android:id="@+id/button1"
-                    android:layout_width="139dp"
+                    android:layout_width="160dp"
                     android:layout_height="match_parent"
                     android:layout_weight="0"
                     android:enabled="false"
@@ -166,6 +171,16 @@
                 android:text="Test" />
 
         </LinearLayout>
+
+
+    </FrameLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        style="@style/color"
+        android:layout_height="82dp"
+        app:itemTextColor="#EDEDED"
+        app:menu="@menu/bottom_nav">
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>
 
