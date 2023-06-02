@@ -2,55 +2,51 @@ package org.altbeacon.beaconreference
 
 import android.Manifest
 import android.app.AlertDialog
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main2.*
 import okhttp3.*
-import org.altbeacon.beacon.*
+import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.MonitorNotifier
 import java.io.IOException
 import java.net.URL
 
-class MainActivity : AppCompatActivity() {
-    lateinit var beaconListView: ListView
-    lateinit var beaconCountTextView: TextView
-    lateinit var monitoringButton: Button
-    lateinit var rangingButton: Button
+class MainActivity2 : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener, BeaconFound.OnButtonClickListener,
+    BeaconFound.SelectBeaconListener, BeaconRegister.RegisterListener, beaconLogout.logoutListener,recordRadioMap.SentRssiListener
+    ,Online.SendBeaconListener{
     lateinit var beaconReferenceApplication: BeaconReferenceApplication
     var alertDialog: AlertDialog? = null
     var neverAskAgainPermissions = ArrayList<String>()
-    lateinit var textView2: TextView
-    lateinit var textView3: TextView
-    lateinit var textInputX: EditText
-    lateinit var textInputY: EditText
-    lateinit var Button1: Button
-    lateinit var Button2: Button
-    lateinit var RegButton: Button
-    lateinit var roomId: EditText
-    lateinit var scannerId: EditText
-    lateinit var toSentBeacon: Spinner
-    private var rssi: Int = 0
-//    var idBeacon = ArrayList<String>()
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var container: FrameLayout
+    private lateinit var controller: FrameLayout
+    var selectedBeaconuuid: String = ""
+    var selectedBeaconrssi: Int = 0
+    var onlineStatus: Boolean = false
+    var beaconsList = mutableListOf<String>()
     val beaconsLists = mutableMapOf<String, Int>()
     val averageBeacon = mutableMapOf<String, ArrayList<Int>>()
     private var updatetimes: Int = 0
-    private var sentData: Boolean = false;
-    private var scanner = "";
+    private var rssi: Int = 0
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main2)
         beaconReferenceApplication = application as BeaconReferenceApplication
 
         // Set up a Live Data observer for beacon data
@@ -60,169 +56,189 @@ class MainActivity : AppCompatActivity() {
         regionViewModel.regionState.observe(this, monitoringObserver)
         // observer will be called each time a new list of beacons is ranged (typically ~1 second in the foreground)
         regionViewModel.rangedBeacons.observe(this, rangingObserver)
-        rangingButton = findViewById<Button>(R.id.rangingButton)
-        monitoringButton = findViewById<Button>(R.id.monitoringButton)
-        beaconListView = findViewById<ListView>(R.id.beaconList)
-        beaconCountTextView = findViewById<TextView>(R.id.beaconCount)
-        beaconCountTextView.text = "No beacons detected"
-        beaconListView.adapter =
-            ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
-        textView2 = findViewById(R.id.textView2)
-        textView3 = findViewById(R.id.textView3)
-        textInputX = findViewById(R.id.editTextNumberX)
-        textInputY = findViewById(R.id.editTextNumberY)
-        Button1 = findViewById(R.id.button1)
-        Button2 = findViewById(R.id.button2)
-        RegButton = findViewById(R.id.regButton)
-        roomId = findViewById(R.id.roomId)
-        scannerId = findViewById(R.id.scannerId)
-        toSentBeacon = findViewById(R.id.toSentBeacon)
-        toSentBeacon.adapter =
-            ArrayAdapter(this, android.R.layout.simple_spinner_item, arrayOf("--Select Beacon--"))
-        switch1.setOnCheckedChangeListener { _ , isChecked ->
-            Button1.isEnabled = !isChecked
-            sentData = isChecked
-        }
-        switch1.isEnabled = false
-        Button1.isEnabled = true
-        scannerId.addTextChangedListener(object : TextWatcher{
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+//        rangingButton = findViewById<Button>(R.id.rangingButton)
+//        monitoringButton = findViewById<Button>(R.id.monitoringButton)
+//        beaconListView = findViewById<ListView>(R.id.beaconList)
+//        beaconCountTextView = findViewById<TextView>(R.id.beaconCount)
+//        beaconCountTextView.text = "No beacons detected"
+        container = findViewById(R.id.container)
+        controller = findViewById(R.id.controller)
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
 
-            }
+        bottomNavigationView.setOnItemSelectedListener(this);
+        val containerfragment = BeaconFound();
+        supportFragmentManager.beginTransaction().replace(R.id.container, containerfragment).commit()
+        val controllerfragment = recordRadioMap();
+        supportFragmentManager.beginTransaction().replace(R.id.controller, controllerfragment).commit()
+    }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                // This method is called after the text is changed.
-                scanner = s.toString()
-                switch1.isEnabled = scanner.length > 0
-            }
-        })
-        button1.setOnClickListener {
-            val textX = editTextNumberX.text.toString().toInt()
-//            textInputX.inputType = InputType.TYPE_CLASS_NUMBER
-//            textInputY.inputType = InputType.TYPE_CLASS_NUMBER
-            val textY = editTextNumberY.text.toString().toInt()
-//            val beaconHave = arrayListOf("00000000-0000-0000-0000-000000000011","00000000-0000-0000-0000-000000000100","00000000-0000-0000-0000-000000000001")
-            val room = roomId.text.toString()
-
-//            idBeacon.add(this.rssi.toString())
-//            println("this is in String we got $idBeacon")
-            println("This is your phone ${Build.BRAND}${Build.MODEL}")
-
-            val json = Gson().toJson(
-                RadioMap(
-                    roomid = room,
-                    scannerid = scanner,
-                    rssi = beaconsLists.getValue(toSentBeacon.selectedItem.toString()),
-                    uuid = toSentBeacon.selectedItem.toString()
-                )
-            )
-            println(json+"");
-            println("rssi sent:"+beaconsLists.getValue(toSentBeacon.selectedItem.toString()))
-            val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
-            val request = Request.Builder()
-                .url(URL("http://trackingposition.us-east-1.elasticbeanstalk.com:8080/savepos/$textX/$textY"))
-                .post(body)
-                .build()
-            val okHttpClient = OkHttpClient()
-            okHttpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    // Handle this
-                    println("Test " + e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    // Handle this
-
-                    println("Test " + response.body()?.string())
-                }
-            })
-
-//            Toast.makeText(this, textX.toString(), Toast.LENGTH_SHORT).show()
-//            Toast.makeText(this, textY.toString(), Toast.LENGTH_SHORT).show()
-//            Toast.makeText(this, beaconNum, Toast.LENGTH_SHORT).show()
-
-            println("hello world $rssi");
-
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Reset colors for all items
+        for (i in 0 until bottomNavigationView.menu.size()) {
+            val menuItem = bottomNavigationView.menu.getItem(i)
+            menuItem.iconTintList = ContextCompat.getColorStateList(this, R.color.cardview_dark_background)
         }
 
-        button2.setOnClickListener {
-//            sentBeacons();
-            testopen();
-        }
+        // Change color for the selected item
+        println("Test")
+        item.iconTintList = ContextCompat.getColorStateList(this, R.color.cardview_dark_background)
+        item.title = item.title.toString()
 
-        RegButton.setOnClickListener{
-            registerBeacon()
+        // Handle navigation logic for each item
+        when (item.itemId) {
+            R.id.main -> replaceController(recordRadioMap())
+            R.id.online -> replaceController(Online())
+            R.id.register -> replaceController(BeaconRegister())
+            R.id.logout -> replaceController(beaconLogout())
+            R.id.radiomap -> replaceController(RadioMapFragment())
         }
+        return true
+    }
 
+    fun replaceController(fragment: Fragment){
+        val fragmentManager = supportFragmentManager
+        val framentTransaction = fragmentManager.beginTransaction()
+        framentTransaction.replace(R.id.controller, fragment)
+        framentTransaction.commit()
+    }
+
+//    override fun onRangeButtonClick(buttonId: Int){
+//        when (buttonId) {
+//            R.id.rangingButton -> {
+//                // Handle button 1 click
+//                println("Pressed rangingButton")
+//            }
+//            R.id.monitoringButton -> {
+//                // Handle button 2 click
+//                println("Pressed monitoringButton")
+//            }
+//            // Add more cases for other buttons if needed
+//        }
+//    }
+
+    override fun toggleRanging() {
+        val fragment = supportFragmentManager.findFragmentById(R.id.container) as? BeaconFound
+        val beaconManager = BeaconManager.getInstanceForApplication(this)
+        if (beaconManager.rangedRegions.size == 0) {
+            beaconManager.startRangingBeacons(beaconReferenceApplication.region)
+            fragment?.updaterangingButton(true);
+//            rangingButton.text = "Stop Ranging"
+//            beaconCountTextView.text = "Ranging enabled -- awaiting first callback"
+        }
+        else {
+            beaconManager.stopRangingBeacons(beaconReferenceApplication.region)
+            fragment?.updaterangingButton(false);
+//            rangingButton.text = "Start Ranging"
+//            beaconCountTextView.text = "Ranging disabled -- no beacons detected"
+//            beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
+        }
+    }
+
+    override fun toggleMonitoring() {
+        val fragment = supportFragmentManager.findFragmentById(R.id.container) as? BeaconFound
+        var dialogTitle = ""
+        var dialogMessage = ""
+        val beaconManager = BeaconManager.getInstanceForApplication(this)
+        if (beaconManager.monitoredRegions.size == 0) {
+            beaconManager.startMonitoring(beaconReferenceApplication.region)
+            dialogTitle = "Beacon monitoring started."
+            dialogMessage = "You will see a dialog if a beacon is detected, and another if beacons then stop being detected."
+//            monitoringButton.text = "Stop Monitoring"
+            fragment?.updatemonitoringButton(true)
+        }
+        else {
+            beaconManager.stopMonitoring(beaconReferenceApplication.region)
+            dialogTitle = "Beacon monitoring stopped."
+            dialogMessage = "You will no longer see dialogs when becaons start/stop being detected."
+//            monitoringButton.text = "Start Monitoring"
+            fragment?.updatemonitoringButton(false)
+        }
+        val builder =
+            AlertDialog.Builder(this)
+        builder.setTitle(dialogTitle)
+        builder.setMessage(dialogMessage)
+        builder.setPositiveButton(android.R.string.ok, null)
+        alertDialog?.dismiss()
+        alertDialog = builder.create()
+        alertDialog?.show()
     }
 
     override fun onPause() {
-        Log.d(TAG, "onPause")
+        Log.d(MainActivity.TAG, "onPause")
         super.onPause()
     }
     override fun onResume() {
-        Log.d(TAG, "onResume")
+        Log.d(MainActivity.TAG, "onResume")
         super.onResume()
         checkPermissions()
     }
 
-    fun testopen(){
-        val intent = Intent(this, MainActivity2::class.java);
-        startActivity(intent);
+    override fun getSelectedBeacon(data: String, rssi: Int){
+        selectedBeaconuuid = data
+        selectedBeaconrssi = rssi
+    }
+
+    fun getScannerId(): String?{
+        val fragment = supportFragmentManager.findFragmentById(R.id.container) as? BeaconFound
+        return fragment?.getScannerId()
+    }
+
+    fun getRoomId(): String?{
+        val fragment = supportFragmentManager.findFragmentById(R.id.controller) as? Online
+        return fragment?.getroomid()
     }
 
     fun sentBeacons(){
 //        val foundBeacons = mutableListOf<beaconposition>()
-        val result = scannerResult(scanner, roomId.text.toString())
+        val result = getRoomId()?.let { getScannerId()?.let { it1 -> scannerResult(it1, it) } }
 //        val room = roomId.text.toString()
 
-        if(result.roomid == ""){
-            println("Roomid is empty")
-        }else{
-            for (element in beaconsLists){
-//                val foundbeacon = beaconposition(
-//                    roomid = room,
-//                    scannerid = this.scanner,
-//                    rssi = averageBeacon.getValue(element.key).sum()/averageBeacon.getValue(element.key).size,
-//                    uuid = element.key
-//                )
-//                foundBeacons.add(foundbeacon)
-//                val sortarray = averageBeacon[element.key]
-//                sortarray?.sort()
-//                if (sortarray != null) {
-//                    averageBeacon[element.key] = sortarray
-//                }
-//
-//                var median = (averageBeacon.getValue(element.key).get(4)+averageBeacon.getValue(element.key).get(5)
-//                        +averageBeacon.getValue(element.key).get(6)+averageBeacon.getValue(element.key).get(7))/4
-                result.addBeacon(element.key, averageBeacon.getValue(element.key).sum()/averageBeacon.getValue(element.key).size)
-//                println("median"+ averageBeacon.values)
-//                result.addBeacon(element.key, median)
+        if (result != null) {
+            if(result.roomid == ""){
+                println("Roomid is empty")
+            }else{
+                for (element in beaconsLists){
+    //                val foundbeacon = beaconposition(
+    //                    roomid = room,
+    //                    scannerid = this.scanner,
+    //                    rssi = averageBeacon.getValue(element.key).sum()/averageBeacon.getValue(element.key).size,
+    //                    uuid = element.key
+    //                )
+    //                foundBeacons.add(foundbeacon)
+    //                val sortarray = averageBeacon[element.key]
+    //                sortarray?.sort()
+    //                if (sortarray != null) {
+    //                    averageBeacon[element.key] = sortarray
+    //                }
+    //
+    //                var median = (averageBeacon.getValue(element.key).get(4)+averageBeacon.getValue(element.key).get(5)
+    //                        +averageBeacon.getValue(element.key).get(6)+averageBeacon.getValue(element.key).get(7))/4
+                    result.addBeacon(element.key, averageBeacon.getValue(element.key).sum()/averageBeacon.getValue(element.key).size)
+                    println("avg+ "+averageBeacon.getValue(element.key).sum())
+    //                println("median"+ averageBeacon.values)
+    //                result.addBeacon(element.key, median)
 
+                }
+                val json = Gson().toJson(result)
+                println("Test1 "+json)
+                val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
+                val request = Request.Builder()
+                    .url(URL("http://trackingposition.us-east-1.elasticbeanstalk.com:8080/saveBeacons"))
+                    .post(body)
+                    .build()
+                val okHttpClient = OkHttpClient()
+                okHttpClient.newCall(request).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        // Handle this
+                        println("SentTEST " + e)
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        // Handle this
+                        println("SentTEST " + response)
+                    }
+                })
             }
-            val json = Gson().toJson(result)
-            println("Test1 "+json)
-            val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
-            val request = Request.Builder()
-                .url(URL("http://trackingposition.us-east-1.elasticbeanstalk.com:8080/saveBeacons"))
-                .post(body)
-                .build()
-            val okHttpClient = OkHttpClient()
-            okHttpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    // Handle this
-                    println("SentTEST " + e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    // Handle this
-                    println("SentTEST " + response)
-                }
-            })
         }
 
     }
@@ -245,35 +261,10 @@ class MainActivity : AppCompatActivity() {
             println("$toprint and $size1")
         }
         updatetimes++;
-        if(updatetimes >= 10 && sentData){
+        if(updatetimes >= 10 && onlineStatus){
             sentBeacons()
             updatetimes = 0;
         }
-    }
-
-    fun registerBeacon(){
-        var toregbeacon = toSentBeacon.selectedItem.toString()
-        val json = Gson().toJson(regBeacon(
-            uuid = toregbeacon,
-            isactive = true
-        ))
-        val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json)
-        val request = Request.Builder()
-            .url(URL("http://trackingposition.us-east-1.elasticbeanstalk.com:8080/regbeacon"))
-            .post(body)
-            .build()
-        val okHttpClient = OkHttpClient()
-        okHttpClient.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                // Handle this
-                println("reged " + e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                // Handle this
-                println("reged " + response.body()?.string())
-            }
-        })
     }
 
     val monitoringObserver = Observer<Int> { state ->
@@ -284,13 +275,13 @@ class MainActivity : AppCompatActivity() {
             dialogTitle = "No beacons detected"
             dialogMessage = "didExitRegionEvent has fired"
             stateString == "outside"
-            beaconCountTextView.text = "Outside of the beacon region -- no beacons detected"
-            beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
+//            beaconCountTextView.text = "Outside of the beacon region -- no beacons detected"
+//            beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
         }
         else {
-            beaconCountTextView.text = "Inside the beacon region."
+//            beaconCountTextView.text = "Inside the beacon region."
         }
-        Log.d(TAG, "monitoring state changed to : $stateString")
+        Log.d(MainActivity.TAG, "monitoring state changed to : $stateString")
         val builder =
             AlertDialog.Builder(this)
         builder.setTitle(dialogTitle)
@@ -301,33 +292,34 @@ class MainActivity : AppCompatActivity() {
         alertDialog?.show()
     }
 
-     val rangingObserver = Observer<Collection<Beacon>> { beacons ->
-        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
-//         var testSub = "$beacons"
-//         testSub = testSub.split(',')
-//         Log.d(TAG, "this is wat we got $beacons")
-//         this.beaconGot.add("$beacons")
-//         Log.d(TAG, "This is what we got from this ${beacons::class.simpleName} ")
-//         beacons.forEach {
-//             println("The fuk is this ${it.id1}" +" Rssi : ${it.rssi}")
-//             beaconGot.addAll(listOf("id1: ${it.id1}" + " rssi: ${it.rssi}"))
-//             beaconGot = beacons.map {key=it.id1"${it.id1}${it.rssi}" }
-//         }
+    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+        Log.d(MainActivity.TAG, "Ranged: ${beacons.count()} beacons")
 
-         for (beacon: Beacon in beacons) {
+        for (beacon: Beacon in beacons) {
 //            Log.d(TAG, "$beacon about ${beacon.rssi} dB")
             this.rssi = "${beacon.rssi}".toInt()
-             beaconsLists[beacon.id1.toString()] = beacon.rssi
-         }
-//         Log.d(TAG, "TestResult: "+beaconsLists)
-         updateAverage()
+            beaconsLists[beacon.id1.toString()] = beacon.rssi
+        }
+////         Log.d(TAG, "TestResult: "+beaconsLists)
+        updateAverage()
 
         if (BeaconManager.getInstanceForApplication(this).rangedRegions.size > 0) {
-            beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
-            beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
-                beacons
-                    .sortedBy { it.id1 }
-                    .map { "${it.id1}\nid2: ${it.id2} id3:  rssi: ${it.rssi}\nest. distance: ${it.distance} m" }.toTypedArray())
+            val found = beacons
+                .sortedBy { it.id1 }
+                .map { "${it.id1}\nid2: ${it.id2} id3:  rssi: ${it.rssi}\nest. distance: ${it.distance} m" }.toTypedArray()
+            val foundList = beacons.map{it.id1}
+            val notnulllist : List<String> = foundList.mapNotNull {  identifier ->
+                identifier?.toString() }
+            val fragment = supportFragmentManager.findFragmentById(R.id.container) as? BeaconFound
+            fragment?.updateBeaconList(found)
+            beaconsList = notnulllist.toMutableList()
+//            fragment?.updateBeaconDropdown(notnulllist)
+
+//            beaconCountTextView.text = "Ranging enabled: ${beacons.count()} beacon(s) detected"
+//            beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,
+//                beacons
+//                    .sortedBy { it.id1 }
+//                    .map { "${it.id1}\nid2: ${it.id2} id3:  rssi: ${it.rssi}\nest. distance: ${it.distance} m" }.toTypedArray())
 //            val toSentBeacon = findViewById<Spinner>(R.id.toSentBeacon)
 //            val toSentBeaconAdapter = toSentBeacon.adapter as ArrayAdapter<String>
 //            toSentBeaconAdapter.clear()
@@ -336,54 +328,13 @@ class MainActivity : AppCompatActivity() {
 
 
 
-            toSentBeacon.adapter =
-                ArrayAdapter(this, android.R.layout.simple_spinner_item,
-                    beacons.map{it.id1})
+//            toSentBeacon.adapter =
+//                ArrayAdapter(this, android.R.layout.simple_spinner_item,
+//                    beacons.map{it.id1})
         }
     }
 
-    fun rangingButtonTapped(view: View) {
-        val beaconManager = BeaconManager.getInstanceForApplication(this)
-        if (beaconManager.rangedRegions.size == 0) {
-            beaconManager.startRangingBeacons(beaconReferenceApplication.region)
-            rangingButton.text = "Stop Ranging"
-            beaconCountTextView.text = "Ranging enabled -- awaiting first callback"
-        }
-        else {
-            beaconManager.stopRangingBeacons(beaconReferenceApplication.region)
-            rangingButton.text = "Start Ranging"
-            beaconCountTextView.text = "Ranging disabled -- no beacons detected"
-            beaconListView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayOf("--"))
-        }
-    }
 
-    fun monitoringButtonTapped(view: View) {
-        var dialogTitle = ""
-        var dialogMessage = ""
-        val beaconManager = BeaconManager.getInstanceForApplication(this)
-        if (beaconManager.monitoredRegions.size == 0) {
-            beaconManager.startMonitoring(beaconReferenceApplication.region)
-            dialogTitle = "Beacon monitoring started."
-            dialogMessage = "You will see a dialog if a beacon is detected, and another if beacons then stop being detected."
-            monitoringButton.text = "Stop Monitoring"
-
-        }
-        else {
-            beaconManager.stopMonitoring(beaconReferenceApplication.region)
-            dialogTitle = "Beacon monitoring stopped."
-            dialogMessage = "You will no longer see dialogs when becaons start/stop being detected."
-            monitoringButton.text = "Start Monitoring"
-        }
-        val builder =
-            AlertDialog.Builder(this)
-        builder.setTitle(dialogTitle)
-        builder.setMessage(dialogMessage)
-        builder.setPositiveButton(android.R.string.ok, null)
-        alertDialog?.dismiss()
-        alertDialog = builder.create()
-        alertDialog?.show()
-
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -392,7 +343,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         for (i in 1..permissions.size-1) {
-            Log.d(TAG, "onRequestPermissionResult for "+permissions[i]+":" +grantResults[i])
+            Log.d(MainActivity.TAG, "onRequestPermissionResult for "+permissions[i]+":" +grantResults[i])
             if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                 //check if user select "never ask again" when denying any permission
                 if (!shouldShowRequestPermissionRationale(permissions[i])) {
@@ -439,7 +390,7 @@ class MainActivity : AppCompatActivity() {
                 builder.setOnDismissListener {
                     requestPermissions(
                         permissions,
-                        PERMISSION_REQUEST_FINE_LOCATION
+                        MainActivity.PERMISSION_REQUEST_FINE_LOCATION
                     )
                 }
                 builder.show()
@@ -468,7 +419,7 @@ class MainActivity : AppCompatActivity() {
                         builder.setOnDismissListener {
                             requestPermissions(
                                 arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                                PERMISSION_REQUEST_BACKGROUND_LOCATION
+                                MainActivity.PERMISSION_REQUEST_BACKGROUND_LOCATION
                             )
                         }
                         builder.show()
@@ -495,7 +446,7 @@ class MainActivity : AppCompatActivity() {
                     builder.setOnDismissListener {
                         requestPermissions(
                             arrayOf(Manifest.permission.BLUETOOTH_SCAN),
-                            PERMISSION_REQUEST_BLUETOOTH_SCAN
+                            MainActivity.PERMISSION_REQUEST_BLUETOOTH_SCAN
                         )
                     }
                     builder.show()
@@ -523,7 +474,7 @@ class MainActivity : AppCompatActivity() {
                             builder.setOnDismissListener {
                                 requestPermissions(
                                     arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                                    PERMISSION_REQUEST_BACKGROUND_LOCATION
+                                    MainActivity.PERMISSION_REQUEST_BACKGROUND_LOCATION
                                 )
                             }
                             builder.show()
@@ -551,16 +502,25 @@ class MainActivity : AppCompatActivity() {
         val PERMISSION_REQUEST_FINE_LOCATION = 3
     }
 
+    override fun getBeaconUuid(): String {
+        return selectedBeaconuuid
+    }
+
+    override fun getUuidtologout(): String {
+        return selectedBeaconuuid
+    }
+
+    override fun getRssi(): HashMap<String, String> {
+        var data = hashMapOf<String, String>()
+        data.put("uuid", selectedBeaconuuid)
+        data.put("rssi", selectedBeaconrssi.toString())
+        getScannerId()?.let { data.put("scanner", it) }
+        return data
+    }
+
+    override fun toggleSendBeacon() {
+        onlineStatus = !onlineStatus
+    }
+
+
 }
-//
-//private operator fun Int.next(): Beacon {
-//    return this.next()
-//}
-//
-//private operator fun Int.hasNext(): Boolean {
-//    return true
-//}
-//
-//private operator fun Beacon.iterator(): Int {
-//    return rssi
-//}

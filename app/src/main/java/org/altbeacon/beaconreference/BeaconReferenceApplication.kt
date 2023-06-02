@@ -88,7 +88,7 @@ class BeaconReferenceApplication: Application() {
         val builder = Notification.Builder(this, "BeaconReferenceApp")
         builder.setSmallIcon(R.drawable.ic_launcher_background)
         builder.setContentTitle("Scanning for Beacons")
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, MainActivity2::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE
         )
@@ -128,7 +128,7 @@ class BeaconReferenceApplication: Application() {
             .setContentText("A beacon is nearby.")
             .setSmallIcon(R.drawable.ic_launcher_background)
         val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addNextIntent(Intent(this, MainActivity::class.java))
+        stackBuilder.addNextIntent(Intent(this, MainActivity2::class.java))
         val resultPendingIntent = stackBuilder.getPendingIntent(
             0,
             PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE

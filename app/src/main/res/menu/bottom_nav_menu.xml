@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Main"
+        android:id="@+id/main"
+        android:icon="@drawable/ic_scan"
+        />
+    <item android:title="Online"
+        android:id="@+id/online"
+        android:icon="@drawable/ic_online"
+        />
+    <item android:title="Register"
+        android:id="@+id/register"
+        android:icon="@drawable/ic_reg"
+        />
+    <item android:title="Log Out"
+        android:id="@+id/logout"
+        android:icon="@drawable/ic_logout"
+        />
+    <item android:title="Radio Map"
+        android:id="@+id/radiomap"
+        android:icon="@drawable/ic_radiomap"
+        />
+</menu>

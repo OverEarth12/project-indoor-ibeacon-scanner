@@ -4,7 +4,20 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/MyProject/beacon-indoor-scanner/project-indoor-ibeacon-scanner-f/scanner/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2595" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/drawable/ic_baseline_note_24.xml" value="0.2595" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/drawable/ic_online.xml" value="0.124" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/drawable/ic_radiomap.xml" value="0.2595" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/drawable/ic_reg.xml" value="0.2585" />
         <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/activity_main.xml" value="0.152" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/activity_main2.xml" value="0.25" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/fragment_beacon_found.xml" value="0.264" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/fragment_beacon_logout.xml" value="0.1" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/fragment_beacon_register.xml" value="0.1" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/fragment_online.xml" value="0.11302083333333333" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/fragment_radio_map.xml" value="0.25" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/layout/fragment_record_radio_map.xml" value="0.11302083333333333" />
+        <entry key="..\:/MyProject/project-indoor-ibeacon-scanner/app/src/main/res/menu/bottom_nav_menu.xml" value="0.11302083333333333" />
       </map>
     </option>
   </component>

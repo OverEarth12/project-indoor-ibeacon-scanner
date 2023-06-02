@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Online">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+        <TextView
+            android:id="@+id/roomon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Room:" />
+
+        <EditText
+            android:id="@+id/roomidsent"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="Room ID"
+
+            android:inputType="textShortMessage" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switchSent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Send Beacons Found:" />
+    </LinearLayout>
+
+
+</FrameLayout>

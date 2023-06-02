@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".BeaconFound"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/beaconCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0 visible beacons:"
+            android:textAlignment="center"
+            />
+
+        <ListView
+            android:id="@+id/beaconList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_above="@id/scannerId">
+
+        <Button
+            android:id="@+id/rangingButton"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:onClick="rangingButtonTapped"
+            android:text="Disable Ranging" />
+
+        <Button
+            android:id="@+id/monitoringButton"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:onClick="monitoringButtonTapped"
+            android:text="Disable Monitoring" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/scannerId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="Scanner ID"
+        android:layout_above="@id/toSentBeacon"
+        android:inputType="textShortMessage"
+        />
+
+    <TextView
+        android:id="@+id/toSentBeacon"
+        android:layout_width="match_parent"
+        android:layout_height="38dp"
+        android:text="No Selected Beacon"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>
